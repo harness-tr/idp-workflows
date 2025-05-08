@@ -1,0 +1,175 @@
+pipeline:
+  projectIdentifier: default_project
+  orgIdentifier: default
+  tags:
+    pov: ""
+    harness: ""
+  stages:
+    - stage:
+        name: App Onboard
+        identifier: App_Onboard
+        description: ""
+        type: IDP
+        spec:
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: CookieCutter
+                  name: Cookie Cutter
+                  identifier: Cookie_Cutter
+                  spec:
+                    templateType: public
+                    publicTemplateUrl: https://github.com/harness-tr/springboot-template
+                    cookieCutterVariables:
+                      project_name: <+pipeline.variables.project_name>
+                      project_slug: <+pipeline.variables.project_slug>
+                      project_owner: <+pipeline.variables.project_owner>
+                      java_package: <+pipeline.variables.java_package>
+                      dockerhub_username: <+pipeline.variables.dockerhub_username>
+                      snyk_org: <+pipeline.variables.snyk_org>
+                      gke_cluster: <+pipeline.variables.gke_cluster>
+                      gke_project: <+pipeline.variables.gke_cluster>
+                      gke_location: <+pipeline.variables.gke_location>
+                      main_class: <+pipeline.variables.project_slug>
+                    verbose: true
+                    overwriteIfExists: true
+              - step:
+                  type: CreateCatalog
+                  name: Create Catalog Entry
+                  identifier: Create_Catalog_Entry
+                  spec:
+                    fileName: catalog.yaml
+                    filePath: <+pipeline.variables.project_slug>
+                    fileContent: |-
+                      apiVersion: backstage.io/v1alpha1
+                      kind: Component
+                      metadata:
+                        name: <+pipeline.variables.project_name_santitized>
+                        annotations:
+                          backstage.io/techdocs-ref: dir:.
+                          github.com/project-slug: <+pipeline.variables.gh_org>/<+pipeline.variables.project_slug>
+                          snyk.io/org-id: <+pipeline.variables.snyk_org>
+                          snyk.io/target-id: <+pipeline.variables.gh_org>/<+pipeline.variables.project_slug>
+                      spec:
+                        type: service
+                        owner: <+pipeline.triggeredBy.email>
+                        lifecycle: experimental
+              - step:
+                  type: CreateRepo
+                  name: Create Repo
+                  identifier: Create_Repo
+                  spec:
+                    connectorType: Github
+                    connectorRef: account.ghharnesstrpat
+                    organization: <+pipeline.variables.gh_org>
+                    repository: <+pipeline.variables.project_name_santitized>
+                    repoType: public
+                    description: <+pipeline.variables.project_description>
+                    defaultBranch: main
+              - step:
+                  type: DirectPush
+                  name: Add Code
+                  identifier: Add_Code
+                  spec:
+                    connectorType: Github
+                    forcePush: true
+                    connectorRef: account.ghharnesstrpat
+                    organization: <+pipeline.variables.gh_org>
+                    repository: <+pipeline.variables.project_name_santitized>
+                    codeDirectory: <+pipeline.variables.project_slug>
+                    codeOutputDirectory: ./
+                    branch: main
+              - step:
+                  type: RegisterCatalog
+                  name: Register Catalog
+                  identifier: RegisterCatalog_1
+                  spec:
+                    connectorType: Github
+                    connectorRef: account.ghharnessworkshopv2
+                    organization: <+pipeline.variables.gh_org>
+                    repository: <+pipeline.variables.project_name_santitized>
+                    filePath: catalog.yaml
+                    branch: main
+                  when:
+                    stageStatus: Success
+          cloneCodebase: false
+        tags: {}
+  variables:
+    - name: project_name
+      type: String
+      description: ""
+      required: false
+      value: <+input>
+    - name: project_slug
+      type: String
+      description: ""
+      required: false
+      value: <+pipeline.variables.project_name.toLowerCase().replace(" ", "-")>
+    - name: project_owner
+      type: String
+      description: ""
+      required: false
+      value: <+input>
+    - name: java_package
+      type: String
+      description: ""
+      required: false
+      value: io.harness
+    - name: dockerhub_username
+      type: String
+      description: ""
+      required: false
+      value: <+secrets.getValue("account.dockerhub-username")>
+    - name: dockerhub_token
+      type: String
+      description: Using GH secret instead
+      required: false
+      value: <+secrets.getValue("account.dockerhub-pat")>
+    - name: project_name_santitized
+      type: String
+      description: ""
+      required: false
+      value: <+pipeline.variables.project_name.toLowerCase().replace(" ", "-")>
+    - name: project_description
+      type: String
+      description: ""
+      required: false
+      value: <+input>
+    - name: main_class
+      type: String
+      description: ""
+      required: false
+      value: <+input>
+    - name: gke_cluster
+      type: String
+      description: ""
+      required: false
+      value: tr-cluster
+    - name: gke_location
+      type: String
+      description: ""
+      required: false
+      value: us-central1
+    - name: gke_project
+      type: String
+      description: ""
+      required: false
+      value: sales-demo
+    - name: snyk_org
+      type: String
+      description: ""
+      required: false
+      value: b4c68fa5-d1b2-451f-a162-ea2ed840727f
+    - name: gh_org
+      type: String
+      description: ""
+      required: false
+      value: harness-tr
+  identifier: Full_Stack_Provisioning
+  name: Full Stack Provisioning
