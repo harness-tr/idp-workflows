@@ -1,7 +1,7 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: Full Stack Onboarding
+  name: Full-Stack-Onboarding
   title: Full Stack Java Application Pattern
   description: Creates and onboards a new GitHub repository according to standardized application patterns for Java. Includes a getting started sample app, GHA, security scan, and GKE deployment.
   tags:
