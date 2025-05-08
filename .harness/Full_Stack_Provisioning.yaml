@@ -58,7 +58,7 @@ pipeline:
                           snyk.io/target-id: <+pipeline.variables.gh_org>/<+pipeline.variables.project_slug>
                       spec:
                         type: service
-                        owner: <+pipeline.triggeredBy.email>
+                        owner: <+pipeline.variables.project_owner>
                         lifecycle: experimental
               - step:
                   type: CreateRepo
