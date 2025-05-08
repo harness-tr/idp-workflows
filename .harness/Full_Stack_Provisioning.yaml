@@ -36,7 +36,6 @@ pipeline:
                       gke_cluster: <+pipeline.variables.gke_cluster>
                       gke_project: <+pipeline.variables.gke_cluster>
                       gke_location: <+pipeline.variables.gke_location>
-                      main_class: <+pipeline.variables.main_class>
                     verbose: true
                     overwriteIfExists: true
               - step:
@@ -141,11 +140,6 @@ pipeline:
       description: ""
       required: false
       value: <+input>
-    - name: main_class
-      type: String
-      description: ""
-      required: false
-      value: <+pipeline.variables.project_name.split(" ").collect(x -> x.capitalize()).join("")>
     - name: gke_cluster
       type: String
       description: ""
