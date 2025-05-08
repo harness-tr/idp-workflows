@@ -145,7 +145,7 @@ pipeline:
       type: String
       description: ""
       required: false
-      value: <+input>
+      value: <+pipeline.variables.project_name.toLowerCase().replace(" ", "-")>
     - name: gke_cluster
       type: String
       description: ""
