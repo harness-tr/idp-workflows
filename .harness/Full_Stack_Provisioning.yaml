@@ -36,7 +36,7 @@ pipeline:
                       gke_cluster: <+pipeline.variables.gke_cluster>
                       gke_project: <+pipeline.variables.gke_cluster>
                       gke_location: <+pipeline.variables.gke_location>
-                      main_class: <+pipeline.variables.project_slug>
+                      main_class: <+pipeline.variables.main_class>
                     verbose: true
                     overwriteIfExists: true
               - step:
