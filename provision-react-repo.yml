@@ -1,0 +1,78 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: Workflows-Quickstart
+  title: Provision a React Application Pattern
+  description: Creates and onboards a new GitHub or Harness Code repository according to standardized application patterns for React
+  tags:
+    - pov
+    - harness  
+spec:
+  owner: Harness
+  type: service
+  parameters:
+    - title: Fill in the repo details
+      required:
+        - project_name
+        - project_description
+        - project_owner
+        - repo_type
+      properties:
+        repo_type:
+          title: Repository Type
+          type: string
+          enum:
+            - GitHub
+            - Harness Code Repo
+          default: Harness Code Repo
+          description: Choose the type of repository to provision
+        project_name:
+          title: Repository Location
+          type: string
+          description: Name the new repository that you want to create
+        project_description:
+          title: Description of the app being scaffolded
+          type: string
+          description: Description of the app being scaffolded
+        project_owner:
+          title: Choose an Owner for the Service
+          type: string
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+
+        token:
+          title: Harness Token
+          type: string
+          ui:widget: password
+          ui:field: HarnessAuthToken       
+  steps:
+    - id: trigger-github
+      name: Provision GitHub Repository
+      if: "${{ parameters.repo_type == 'GitHub' }}"
+      action: trigger:harness-custom-pipeline
+      input:
+        url: "https://app.harness.io/ng/account/G600Huj2QC2gKhlX0tcvig/all/orgs/default/projects/default_project/pipelines/Onboard_App/pipeline-studio/?repoName=account.pipeline-definitions&connectorRef=&storeType=REMOTE&branch=github"
+        inputset:
+          project_name: ${{ parameters.project_name }}
+          project_description: ${{ parameters.project_description }}
+          project_owner: ${{ parameters.project_owner }}
+        apikey: ${{ parameters.token }}
+
+    - id: trigger-harness
+      name: Provision Harness Code Repo
+      if: "${{ parameters.repo_type == 'Harness Code Repo' }}"
+      action: trigger:harness-custom-pipeline
+      input:
+        url: "https://app.harness.io/ng/account/G600Huj2QC2gKhlX0tcvig/all/orgs/default/projects/default_project/pipelines/Onboard_App/pipeline-studio/?storeType=REMOTE&connectorRef=&repoName=account.pipeline-definitions&branch=hcr"
+        inputset:
+          project_name: ${{ parameters.project_name }}
+          project_description: ${{ parameters.project_description }}
+          project_owner: ${{ parameters.project_owner }}
+        apikey: ${{ parameters.token }}
+
+  output:
+    links:
+      - title: Pipeline Details
+        url: ${{ steps.trigger-github.output.PipelineUrl || steps.trigger-harness.output.PipelineUrl }}
