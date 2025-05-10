@@ -107,6 +107,7 @@ pipeline:
                       ls -la /harness
                       wizcli auth login --id <+secrets.getValue("account.wiz-tenantid")> --secret <+secrets.getValue("account.wiz-token")>
                       wizcli dir scan --path /harness -o /tmp/output.json
+                      cat /tmp/output.json
           cloneCodebase: false
         tags: {}
   variables:
