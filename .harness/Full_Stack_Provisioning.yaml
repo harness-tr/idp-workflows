@@ -85,6 +85,20 @@ pipeline:
                     codeOutputDirectory: ./
                     branch: main
               - step:
+                  type: Run
+                  name: Wiz Scan
+                  identifier: Wiz_Scan
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: harness/wiz-job-runner:latest
+                    shell: Sh
+                    command: |-
+                      ls -la /harness
+                      wizcli auth login --id <+secrets.getValue("account.wiz-tenantid")> --secret <+secrets.getValue("account.wiz-token")>
+                      wizcli dir scan --path /harness -o /tmp/output.json
+                      cat /tmp/output.json
+                contextType: Pipeline
+              - step:
                   type: RegisterCatalog
                   name: Register Catalog
                   identifier: RegisterCatalog_1
@@ -97,17 +111,6 @@ pipeline:
                     branch: main
                   when:
                     stageStatus: Success
-              - step:
-                  type: Run
-                  name: Wiz Scan
-                  identifier: Wiz_Scan
-                  spec:
-                    shell: Sh
-                    command: |-
-                      ls -la /harness
-                      wizcli auth login --id <+secrets.getValue("account.wiz-tenantid")> --secret <+secrets.getValue("account.wiz-token")>
-                      wizcli dir scan --path /harness -o /tmp/output.json
-                      cat /tmp/output.json
           cloneCodebase: false
         tags: {}
   variables:
