@@ -97,6 +97,16 @@ pipeline:
                     branch: main
                   when:
                     stageStatus: Success
+              - step:
+                  type: Run
+                  name: Wiz Scan
+                  identifier: Wiz_Scan
+                  spec:
+                    shell: Sh
+                    command: |-
+                      ls -la /harness
+                      wizcli auth login --id <+secrets.getValue("account.wiz-tenantid")> --secret <+secrets.getValue("account.wiz-token")>
+                      wizcli dir scan --path /harness -o /tmp/output.json
           cloneCodebase: false
         tags: {}
   variables:
