@@ -94,7 +94,7 @@ pipeline:
                     shell: Sh
                     command: |-
                       ls -la /harness
-                      wizcli auth login --id <+secrets.getValue("account.wiz-tenantid")> --secret <+secrets.getValue("account.wiz-token")>
+                      wizcli auth --id <+secrets.getValue("account.wiz-tenantid")> --secret <+secrets.getValue("account.wiz-token")>
                       wizcli dir scan --path /harness -o /tmp/output.json
                       cat /tmp/output.json
                 contextType: Pipeline
